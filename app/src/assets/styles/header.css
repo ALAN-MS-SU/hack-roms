@@ -1,0 +1,214 @@
+header {
+    border-bottom: solid 5px var(--text-color-white);
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: 13vh;
+    background-image: radial-gradient(var(--color-black) 80%, var(--color-gray));
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    /* filter:contrast(1.5); */
+    z-index: 2;
+    min-height: 10vh;
+}
+#menu {
+    display: none;
+}
+.mobile {
+    display: none;
+}
+.mario {
+    width: 5%;
+    height: 80%;
+    cursor: pointer;
+}
+header h1 {
+    font-size: 100%;
+}
+header nav {
+    color: var(--text-color-white);
+    font-size: 90%;
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    width: 400px;
+    height: 100%;
+    justify-content: center;
+}
+header .search {
+    background-color: white;
+    width: 20%;
+    border-radius: 20px;
+    height: 25%;
+    padding-right: 1%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: initial;
+}
+header div .icon {
+    color: var(--color-black);
+    padding-left: 1.5%;
+    padding-right: 1.5%;
+    font-size: 170%;
+}
+header div input {
+    color: black;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    height: 100%;
+}
+nav .btn-dark {
+    border: none;
+    font-size: 110%;
+    padding: 10%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+    border-left: solid 4px var(--text-color-white);
+    border-radius: 0px;
+}
+header .user-icon {
+    width: 68.06px;
+    height: 68.06px;
+    border: var(--text-color-white) 2px solid;
+    border-radius: 100%;
+    cursor: pointer;
+}
+nav .last {
+    border-right: solid 4px var(--text-color-white);
+}
+.name {
+    font-size: 110%;
+}
+header .column {
+    position: relative;
+    right: 10px;
+}
+@media (max-width: 1024px) {
+    .mario {
+        width: 7%;
+    }
+    header nav {
+        width: 35%;
+    }
+    header .search {
+        width: 30%;
+    }
+    header h1 {
+        display: none;
+    }
+}
+@media (max-width: 768px) {
+    header div .icon {
+        font-size: 200%;
+    }
+    .mario {
+        width: 10%;
+    }
+    header .search {
+        width: 50%;
+    }
+    #menu {
+        z-index: 3;
+        display: flex;
+        font-size: 150%;
+        border: solid var(--text-color-white) 3px;
+        border-radius: 5px;
+        position: relative;
+        right: 20px;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    #menu svg {
+        transition: all 0.3s ease;
+    }
+    #menu:hover {
+        border: var(--color-gray) solid 3px;
+    }
+    #menu:hover > svg {
+        color: var(--color-gray);
+    }
+    .nav-mobile {
+        opacity: 0%;
+        position: fixed;
+        height: 100vh;
+        width: 200px;
+        right: 0%;
+        top: 0%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: center;
+        background-image: linear-gradient(rgb(45, 45, 45), var(--color-dark-gray), rgb(45, 45, 45));
+        z-index: 0;
+    }
+    .nav-mobile nav {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 80%;
+        width: 100%;
+    }
+    .nav-mobile .btn-dark {
+        position: relative;
+        top: 5%;
+        bottom: 0px;
+        font-size: 120%;
+        height: 30%;
+        width: 100%;
+        border: none;
+        border-top: solid var(--text-color-white) 5px;
+    }
+    .nav-mobile .last {
+        border-bottom: solid var(--text-color-white) 5px;
+    }
+    .nav-mobile .column {
+        height: 20%;
+        position: relative;
+        left: 5px;
+        top: 10%;
+        display: flex;
+    }
+    header nav {
+        display: none;
+    }
+    header .column {
+        display: none;
+    }
+}
+.mobile-open {
+    animation: mobile-open 0.5s ease forwards;
+}
+@media (max-width: 480px) {
+    .mario {
+        width: 15%;
+    }
+    #menu {
+        font-size: 130%;
+        right: 10px;
+        transition: all 0.3s ease;
+    }
+    .nav-mobile {
+        width: 150px;
+    }
+}
+@media (max-width: 320px) {
+    .mario {
+        height: 50%;
+    }
+}
+@keyframes mobile-open {
+    0% {
+        display: flex;
+    }
+    100% {
+        opacity: 100%;
+    }
+}

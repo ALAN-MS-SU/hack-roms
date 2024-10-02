@@ -1,0 +1,54 @@
+footer h1 {
+    font-family: 'arial';
+    text-align: center;
+    font-size: 150%;
+    white-space: nowrap;
+}
+footer{
+    min-height: calc(20vh + 6px);
+}
+footer svg {
+    font-size: 150%;
+}
+footer .row .column {
+    width: 15%;
+}
+footer .row .column .row{
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 3px;
+  flex-wrap: nowrap;
+  display: flex;
+}
+footer {
+    padding: 3%;
+    background-color: var(--color-black);
+    border-top: solid 4px var(--text-color-white);
+}
+footer h3 {
+    cursor: pointer;
+    text-decoration: underline;
+}
+@media (max-width: 1024px) {
+    footer h1 {
+        font-size: 130%;
+    }
+}
+@media (max-width: 768px) {
+    footer svg {
+        font-size: 130%;
+    }
+    footer .row {
+      justify-content: center;
+      gap: 40px;
+    }
+}
+@media (max-width:480px) {
+    .autor{
+        margin-top: 20px;
+    }
+    footer .row{
+        flex-direction: column;
+        gap: 15px;
+    }
+}

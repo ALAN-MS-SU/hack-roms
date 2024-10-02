@@ -1,0 +1,228 @@
+:root {
+    --color-black: black;
+    --color-gray: rgb(197, 197, 197);
+    --color-dark-gray: #2a2731;
+    --text-color-white: white;
+    --text-color-black: black;
+}
+@font-face {
+    font-family: 'altone';
+    src: url('../fonts/Altone\ Trial-Regular.ttf');
+    font-display: block;
+}
+* {
+    text-decoration: none;
+    margin: 0;
+    padding: 0;
+    border: none;
+    font-family: 'altone';
+    box-sizing: border-box;
+}
+body {
+    overflow-x: hidden;
+    font-size: 100%;
+    width: 100%;
+}
+.reverse {
+    transform: scaleX(-1);
+}
+h1 {
+    color: var(--text-color-white);
+}
+h2 {
+    color: var(--text-color-black);
+}
+input {
+    outline: none;
+    background-color: white;
+    border-radius: 3px;
+    font-family: 'arial';
+    padding-left: 1%;
+}
+.row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0px 2%;
+}
+input[type='file'] {
+    display: none;
+}
+.column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+.btn-dark {
+    color: var(--text-color-white);
+    background-color: transparent;
+    border: solid var(--text-color-white) 4px;
+    cursor: pointer;
+    transition: all 0.5s ease;
+    text-align: center;
+    padding: 2%;
+    font-weight: bold;
+    border-radius: 7px;
+    text-align: center;
+}
+
+.btn-light {
+    border-radius: 5px;
+    background-color: var(--color-gray);
+    padding: 15px;
+    text-align: center;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.5s ease;
+    color: var(--text-color-black);
+    text-align: center;
+}
+.btn-dark > a {
+    color: var(--text-color-white);
+    transition: all 0.5s ease;
+}
+.btn-dark:hover {
+    background-color: white;
+    color: var(--color-black);
+}
+.btn-dark:hover > a {
+    color: var(--color-black);
+}
+.btn-light:hover {
+    background-color: var(--text-color-black);
+    color: var(--text-color-white);
+}
+h3 {
+    font-family: 'arial';
+    color: var(--text-color-white);
+}
+svg {
+    cursor: pointer;
+    font-size: 200%;
+    color: var(--text-color-white);
+}
+.form1 {
+    display: flex;
+    background-color: var(--color-dark-gray);
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    width: 570px;
+    padding: 1.5%;
+    height: 600px;
+    font-size: 120%;
+    border-radius: 10px;
+    box-shadow: 0px 0px 20px black;
+}
+.form1 .normal {
+    color: var(--text-color-white);
+    text-align: end;
+    width: 100px;
+}
+.form1 input {
+    width: 260px;
+    font-size: 120%;
+}
+.form1 select {
+    border-radius: 3px;
+    font-size: 100%;
+    width: 260px;
+}
+.form1 .row {
+    justify-content: center;
+    width: 100%;
+}
+.form1 img {
+    height: 15%;
+    width: 15%;
+    border: var(--text-color-white) solid 3px;
+    border-radius: 100%;
+}
+.form1 .row[name='center'] {
+    left: 0%;
+    justify-content: center;
+}
+.container {
+    padding-top: 2%;
+    padding-bottom: 2%;
+    display: grid;
+    grid-template-columns: 450px 450px 450px;
+    grid-template-rows: auto;
+    justify-content: center;
+    align-items: center;
+    justify-items: center;
+    row-gap: 100px;
+    height: auto;
+}
+.back-dark {
+    color: var(--text-color-black);
+    font-size: 300%;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    transition: all ease 0.5s;
+    text-align: center;
+    border: solid var(--text-color-white) 3px;
+    border-radius: 100%;
+}
+.back-light {
+    color: var(--text-color-white);
+    font-size: 300%;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    transition: all ease 0.5s;
+    border: solid var(--text-color-black) 3px;
+    border-radius: 100%;
+}
+.back-dark:hover {
+    color: var(--text-color-white);
+    border: solid var(--text-color-black) 5px;
+}
+.back-light:hover {
+    color: var(--text-color-black);
+    border: solid var(--text-color-white) 5px;
+}
+@media (max-width: 1440px) {
+    .container {
+        grid-template-columns: 400px 400px 400px;
+    }
+}
+@media (max-width: 1200px) {
+    .container {
+        grid-template-columns: 500px 500px;
+    }
+}
+@media (max-width: 1024px) {
+    .container {
+        grid-template-columns: 375px 375px;
+    }
+    body {
+        font-size: 90%;
+    }
+}
+@media (max-width: 768px) {
+    .form1 {
+        width: 450px;
+        padding: 1.5%;
+        height: 470px;
+    }
+    .container {
+        grid-template-columns: 400px;
+    }
+    body {
+        font-size: 80%;
+    }
+}
+@media (max-width: 480px) {
+    .form1 {
+        width: 300px;
+        padding: 1.5%;
+        height: 500px;
+    }
+    body {
+        font-size: 70%;
+    }
+}
