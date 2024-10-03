@@ -57,11 +57,13 @@ router.post('/login', icon.none(), (req, res) => {
             console.log(err);
             return res.sendStatus(500).end();
         }
-        connection.query('call select_all("user","hashtag = ? and password = ?",null)', [hashtag, password], (err, rows, fields) => {
+        connection.query(`call select_all("user","hashtag = ? and password = ?",null)`, [hashtag, password], (err, rows, fields) => {
             if (err) {
                 console.log(err);
                 return res.sendStatus(500).end();
             }
+            if(rows[0] < 1)
+                return res.sendStatus(500).end();
             const { u_name, icon } = rows[0][0];
             return res.json({ hashtag: hashtag, name: u_name, password: password, icon: icon });
         });
@@ -69,5 +71,3 @@ router.post('/login', icon.none(), (req, res) => {
     });
 });
 export default router;
-// file.mimetype.split("/")[1]
-// file.mimetype.substring(6,file.mimetype.length)
