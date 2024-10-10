@@ -1,10 +1,10 @@
-import express from 'express';
-import DB from '../db/db.js';
-import multer from 'multer';
-import fs from 'fs';
-import { v4 as uuid } from 'uuid';
 import dotenv from 'dotenv';
+import express from 'express';
+import fs from 'fs';
+import multer from 'multer';
 import process from 'process';
+import { v4 as uuid } from 'uuid';
+import DB from '../db/db.js';
 dotenv.config();
 const Router = express.Router();
 const storage = multer.diskStorage({
@@ -130,7 +130,7 @@ Router.put('/update-user/:user', image.single('icon'), (req, res) => {
     DB.getConnection((err, connection) => {
         if (err) return console.log(err);
         if (
-            connection.query(`call login(?,?)`, [user, check], (err, rows, fields) => {
+            connection.query(`call select_all('user',"hashtag = ? and password = ?",null)`, [user, check], (err, rows, fields) => {
                 if (err) {
                     console.log(err);
                     return false;

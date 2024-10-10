@@ -1,10 +1,9 @@
 import express from 'express';
-import multer from 'multer';
-import DB from '../db/db.js';
 import fs from 'fs';
-import dotenv from 'dotenv';
-import { v4 as uuid } from 'uuid';
+import multer from 'multer';
 import process from 'process';
+import { v4 as uuid } from 'uuid';
+import DB from '../db/db.js';
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, './server/files/icon/');
@@ -62,8 +61,7 @@ router.post('/login', icon.none(), (req, res) => {
                 console.log(err);
                 return res.sendStatus(500).end();
             }
-            if(rows[0] < 1)
-                return res.sendStatus(500).end();
+            if (rows[0] < 1) return res.sendStatus(500).end();
             const { u_name, icon } = rows[0][0];
             return res.json({ hashtag: hashtag, name: u_name, password: password, icon: icon });
         });

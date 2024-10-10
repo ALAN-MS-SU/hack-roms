@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Hacks from '../pieces/hacks_loding';
 import { FaArrowCircleLeft } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 import '../../assets/styles/user.css';
+import Hacks from '../pieces/hacks_loding';
 export default function Account(props) {
     const navigate = useNavigate();
     const user = useRef();
@@ -57,10 +57,23 @@ export default function Account(props) {
         localStorage.clear();
         navigate('/');
     }
+    function lazy_loading() {
+        const boxes = Array.from(document.querySelectorAll('.box-image'));
+        const init = Array.from(document.querySelectorAll('.box'));
+
+        boxes.map((box, index) => {
+            if (box.getBoundingClientRect().top < window.innerHeight) {
+                box.src = `${process.env.REACT_APP_API_HOST}/cover/${hacks[index].cover}`;
+                init[index].classList.add('init');
+            }
+        });
+    }
+    window.onscroll = () => lazy_loading();
     useEffect(() => {
         if (!hacks) {
             get_user();
         }
+        lazy_loading();
     });
     return (
         <section id="user">

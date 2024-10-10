@@ -178,11 +178,11 @@ svg {
     border-radius: 100%;
 }
 .back-dark:hover {
-    color: var(--text-color-white);
+    color: transparent;
     border: solid var(--text-color-black) 5px;
 }
 .back-light:hover {
-    color: var(--text-color-black);
+    color: transparent;
     border: solid var(--text-color-white) 5px;
 }
 @media (max-width: 1440px) {

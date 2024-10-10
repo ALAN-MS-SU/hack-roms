@@ -1,6 +1,6 @@
 import React from 'react';
-import '../../assets/styles/box.css';
 import { useNavigate } from 'react-router-dom';
+import '../../assets/styles/box.css';
 export default function Box(props) {
     const navigate = useNavigate();
     async function delete_hack() {
@@ -25,8 +25,8 @@ export default function Box(props) {
     console.log(props);
     return (
         <>
-            <div className="box init">
-                <img src={`${props.api.host}/cover/${props.cover}`} />
+            <div className="box">
+                <img className="box-image" />
                 <h3>{props.name}</h3>
                 <div className="row">
                     <button onClick={() => navigate(`/update-hack/${props.id}`)} className="btn-dark">

@@ -8,6 +8,7 @@
     border: solid var(--text-color-white) 5px;
     height: 430px;
     box-shadow: 0px 0px 100px var(--text-color-white);
+    background-color: var(--color-white);
 }
 #user .border {
     padding-top: 2.5%;
