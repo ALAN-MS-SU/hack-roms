@@ -9,9 +9,8 @@ const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const type = file.mimetype.split('/');
         const extension = file.originalname.split('.');
-        console.log(`type: ${type[0]} extension: ${extension[extension.length - 1]}`);
         if (type[0] === 'image' && file.fieldname === 'cover') return cb(null, './server/files/cover/');
-        if (type[1] === 'octet-stream' && file.fieldname === 'game' && extension[extension.length - 1] === 'bps') return cb(null, './server/files/game_file/');
+        if ((type[1] === 'octet-stream' || type[1] === 'x-bps-patch') && file.fieldname === 'game' && extension[extension.length - 1] === 'bps') return cb(null, './server/files/game_file/');
         try {
             throw new Error('image not accepted');
         } catch (err) {
@@ -22,7 +21,7 @@ const storage = multer.diskStorage({
     filename: (req, file, cb) => {
         const type = file.mimetype.split('/');
         if (type[0] === 'image') return cb(null, `${uuid()}.${type[1]}`);
-        if (type[1] === 'octet-stream') return cb(null, `${uuid()}.bps`);
+        if (type[1] === 'octet-stream' || type[1] === 'x-bps-patch') return cb(null, `${uuid()}.bps`);
         //  throw new Error("2")
     }
 });
@@ -31,16 +30,14 @@ const files = multer({
 });
 const Router = express.Router();
 
-Router.get('/get-hack/:id', files.none(), (req, res) => {
+Router.get('/get-hack/:id', files.none(), async (req, res) => {
     const id = req.params.id || false;
-    DB.getConnection((err, connection) => {
-        if (err) return console.log(err);
-        connection.query(`call select_all("hacks","id = ?",null)`, [id], (err, rows, fields) => {
-            if (err) return console.log(err);
-            res.json(rows[0][0]);
-        });
-        return connection.release();
-    });
+    const connection = await DB.connect();
+
+    const data = await connection.query(`select * from select_hack($1,'')`, [`id = ${id}`]);
+    if (data.err) return console.log(data.err);
+    res.json(data.rows[0]);
+    connection.release();
 });
 
 Router.put(
@@ -55,7 +52,7 @@ Router.put(
             maxCount: 1
         }
     ]),
-    (req, res) => {
+    async (req, res) => {
         const user = req.body.user.trim() || false;
         const password = req.body.password.trim() || false;
         const id = req.body.id || false;
@@ -82,91 +79,71 @@ Router.put(
             delete_files();
             return res.status(500).end();
         }
-        DB.getConnection((err, connection) => {
-            if (err) return console.log(err);
-            if (
-                !connection.query(`call select_all("user","hashtag = ? and password = ?",null)`, [user, password], (err, rows, fields) => {
-                    if (err) return console.log(err);
-                    if (rows[0].length > 0) {
-                        console.log('Segunda validação');
-                        return true;
-                    }
-                    console.log('Segunda recusada');
-                    delete_files();
-                    return false;
-                })
-            )
-                return res.status(500).end();
-            if (
-                !connection.query(`call select_all('hacks',"id = ? and creator = ?",null)`, [id, user], (err, rows, fields) => {
-                    if (err) return console.log(err);
-                    if (rows[0].length > 0) {
-                        return true;
-                    }
-                    delete_files();
-                    return false;
-                })
-            )
-                return res.status(500).end();
-            connection.query(`call hacks('update',?,?,?,?,?,?,?)`, [name, user, category, original, cover ? cover : old_cover, game ? game : old_game, id], (err, rows, fields) => {
+        const connection = await DB.connect();
+        let data = await connection.query(`select * from select_user($1,'')`, [`hashtag = '${user}' and password = '${password}'`]);
+        if (data.err) return console.log(data.err);
+        if (data.rows[0].length <= 0) {
+            delete_files();
+            return res.status(500).end();
+        }
+        data = await connection.query(`select * from select_hack($1,'')`, [`id = '${id}' and creator = '${user}'`]);
+
+        if (data.err) return console.log(data.err);
+        if (data.rows[0].length <= 0) {
+            delete_files();
+            return res.status(500).end();
+        }
+
+        data = await connection.query(`call hacks('update',$1,$2,$3,$4,$5,$6,$7)`, [name, user, category, original, cover ? cover : old_cover, game ? game : old_game, id]);
+        if (data.err) return console.log(data.err);
+        if (cover && old_cover) {
+            fs.rename(`${process.env.path_cover}/${cover.split('---')[1]}`, `${process.env.path_cover}/${cover}`, (err) => {
                 if (err) return console.log(err);
-                if (cover && old_cover) {
-                    fs.rename(`${process.env.path_cover}/${cover.split('---')[1]}`, `${process.env.path_cover}/${cover}`, (err) => {
-                        if (err) return console.log(err);
-                    });
-                    fs.unlink(`${process.env.path_cover}/${old_cover}`, (err) => {
-                        if (err) return console.log(err);
-                    });
-                }
-                if (game && old_game) {
-                    fs.rename(`${process.env.path_game}/${game.split('---')[1]}`, `${process.env.path_game}/${game}`, (err) => {
-                        if (err) return console.log(err);
-                    });
-                    fs.unlink(`${process.env.path_game}/${old_game}`, (err) => {
-                        if (err) return console.log(err);
-                    });
-                }
-                return res.json({}).end();
             });
-            return connection.release();
-        });
+            fs.unlink(`${process.env.path_cover}/${old_cover}`, (err) => {
+                if (err) return console.log(err);
+            });
+        }
+        if (game && old_game) {
+            fs.rename(`${process.env.path_game}/${game.split('---')[1]}`, `${process.env.path_game}/${game}`, (err) => {
+                if (err) return console.log(err);
+            });
+            fs.unlink(`${process.env.path_game}/${old_game}`, (err) => {
+                if (err) return console.log(err);
+            });
+        }
+        connection.release();
+
+        return res.json({}).end();
     }
 );
-Router.delete('/delete-hack', files.none(), (req, res) => {
+Router.delete('/delete-hack', files.none(), async (req, res) => {
     const id = req.body.id || false;
     const user = req.body.user || false;
     const password = req.body.password || false;
     const cover = req.body.cover || false;
     const game = req.body.game || false;
     if (!id || !user || !password) return res.status(500).end();
-    DB.getConnection((err, connection) => {
-        if (err) return console.log(err);
-        if (
-            !connection.query(`call select_all('user',"hashtag = ? and password = ?",null)`, [user, password], (err, rows, fields) => {
-                if (err) return console.log(err);
-                if (rows[0].length > 0) {
-                    return true;
-                }
-                return false;
-            })
-        ) {
-            res.status(500).end();
-        }
-        connection.query(`call hacks("delete",null,null,null,null,null,null,?)`, [id], (err, rows, fields) => {
+    const connection = await DB.connect();
+    let data = await connection.query(`select * from select_user($1,'')`, [`hashtag = '${user}' and password = '${password}'`]);
+    if (data.err) return console.log(err);
+    if (data.rows[0].length <= 0) {
+        res.status(500).end();
+    }
+    data = await connection.query(`call hacks('delete','','','','','','',$1)`, [id]);
+    if (data.err) return console.log(data.err);
+    if (cover) {
+        fs.unlink(`${process.env.path_cover}/${cover}`, (err) => {
             if (err) return console.log(err);
-            if (cover) {
-                fs.unlink(`${process.env.path_cover}/${cover}`, (err) => {
-                    if (err) return console.log(err);
-                });
-            }
-            if (game) {
-                fs.unlink(`${process.env.path_game}/${game}`, (err) => {
-                    if (err) return console.log(err);
-                });
-            }
-            res.end();
         });
-        return connection.release();
-    });
+    }
+    if (game) {
+        fs.unlink(`${process.env.path_game}/${game}`, (err) => {
+            if (err) return console.log(err);
+        });
+    }
+    connection.release();
+    return res.end();
 });
+
 export default Router;

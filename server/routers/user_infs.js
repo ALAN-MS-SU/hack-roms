@@ -23,102 +23,69 @@ const storage = multer.diskStorage({
 });
 const image = multer({ storage: storage });
 
-Router.post('/infs-hacks', image.none(), (req, res) => {
+Router.post('/infs-hacks', image.none(), async (req, res) => {
     const user = req.body.user.trim() || false;
     const password = req.body.password.trim() || false;
     if (!user || !password) return res.status(500).end();
-    DB.getConnection((err, connection) => {
-        if (err) return console.log(err);
-        if (
-            !connection.query(`call select_all(\'user\',\"hashtag = ? and password = ?\",null)`, [user, password], (err, rows, fields) => {
-                if (err) {
-                    console.log(err);
-                    return false;
-                }
-                if (rows[0].length > 0) return true;
-                return false;
-            })
-        )
-            return res.status(500).end();
-        connection.query(`call select_all(\'hacks\',"creator = ?",\'creator\')`, [user], (err, rows, fields) => {
-            if (err) {
-                res.status(500).end();
-                return console.log(err);
-            }
-            return res.json(rows[0]);
-        });
-        return connection.release();
-    });
+    const connection = await DB.connect();
+    let data = await connection.query(`select * from select_user($1,'')`, [`hashtag = '${user}' and password = '${password}'`]);
+    if (data.err) {
+        return console.log(data.err);
+    }
+    if (data.rows.length <= 0) return res.status(500).end();
+
+    data = await connection.query(`select * from select_hack($1,\'creator\')`, [`creator = '${user}'`]);
+    if (data.err) {
+        console.log(data.err);
+        return res.status(500).end();
+    }
+    connection.release();
+    return res.json(data.rows);
 });
-Router.delete('/delete-user', image.none(), (req, res) => {
+Router.delete('/delete-user', image.none(), async (req, res) => {
     const user = req.body.user.trim() || false;
     const password = req.body.password.trim() || false;
     if (!user || !password) return res.status(500).end();
-    DB.getConnection((err, connection) => {
-        if (err) return console.log(err);
-        if (
-            !connection.query(`call select_all(\'user\',"hashtag = ? and password = ?",null)`, [user, password], (err, rows, fields) => {
+    const connection = await DB.connect();
+
+    let data = await connection.query(`select * from select_user($1,'')`, [`hashtag = '${user}' and password = '${password}'`]);
+    if (data.err) return console.log(data.err);
+    if (data.rows.length <= 0) {
+        if (data.rows[0].icon !== null) {
+            fs.unlink(`${process.env.path_icon}/${rows[0][0].icon}`, (err) => {
                 if (err) return console.log(err);
-                if (rows[0].length > 0) {
-                    if (rows[0][0].icon !== null) {
-                        fs.unlink(`${process.env.path_icon}/${rows[0][0].icon}`, (err) => {
-                            if (err) return console.log(err);
-                        });
-                    }
-                    return true;
-                }
-                return false;
-            })
-        ) {
-            console.log('esse res aqui');
-            res.status(500).end();
+            });
         }
-        connection.query(`call user(\'delete\',?,null,null,null)`, [user], (err, rows, fields) => {
-            if (err) console.log(err);
-            console.log(rows);
-            fs.readdir(`${process.env.path_cover}`, (err, files) => {
-                if (err) return console.log(err);
-                files.map((file) => {
-                    if (file.split('---')[0] === user.split('#')[1]) {
-                        console.log('arquivo deletado: ' + file);
-                        return fs.unlink(`${process.env.path_cover}/${file}`, (err) => {
-                            if (err) return console.log(err);
-                        });
-                    }
+        res.status(500).end();
+    }
+    
+    data = await connection.query(`call "user"(\'delete\',$1,'','','')`, [user]);
+    if (data.err) console.log(data.err);
+    fs.readdir(`${process.env.path_cover}`, (err, files) => {
+        if (err) return console.log(err);
+        files.map((file) => {
+            if (file.split('---')[0] === user.split('#')[1]) {
+                return fs.unlink(`${process.env.path_cover}/${file}`, (err) => {
+                    if (err) return console.log(err);
                 });
-            });
-            fs.readdir(`${process.env.path_game}`, (err, files) => {
-                if (err) return console.log(err);
-                files.map((file) => {
-                    if (file.split('---')[0] === user.split('#')[1]) {
-                        console.log('arquivo deletado: ' + file);
-                        return fs.unlink(`${process.env.path_game}/${file}`, (err) => {
-                            if (err) return console.log(err);
-                        });
-                    }
-                });
-            });
-            // console.log(covers)
-            // for(let i = 0; i < games.length || i < covers.length;i++){
-            //     if(games[i].split("---")[0] === user.split("#")[1]){
-            //         fs.unlink(`./server/files/game_file/${games[i]}`,(err)=>{
-            //             if(err)
-            //                 return console.log(err)
-            //         })
-            //     }
-            //     if(covers[i].split("---")[0] === user.split("#")[1]){
-            //         fs.unlink(`./server/files/cover/${covers[i]}`,(err)=>{
-            //             if(err)
-            //                 return console.log(err)
-            //         })
-            //     }
-            // }
-            res.status(200).json({});
+            }
         });
-        return connection.release();
     });
+    fs.readdir(`${process.env.path_game}`, (err, files) => {
+        if (err) return console.log(err);
+        files.map((file) => {
+            if (file.split('---')[0] === user.split('#')[1]) {
+                return fs.unlink(`${process.env.path_game}/${file}`, (err) => {
+                    if (err) return console.log(err);
+                });
+            }
+        });
+    });
+    connection.release();
+    return res.status(200).json({});
 });
-Router.put('/update-user/:user', image.single('icon'), (req, res) => {
+
+Router.put('/update-user/:user', image.single('icon'), async (req, res) => {
     const user = `#${req.params.user.trim()}`;
     const check = req.body.check.trim() || false;
     const name = req.body.name.trim() || false;
@@ -127,42 +94,29 @@ Router.put('/update-user/:user', image.single('icon'), (req, res) => {
     const old_icon = req.body.old_icon || false;
     if (!user || !name || !password) return res.status(500).end();
     if (name.length < 4 || password.length < 7) return res.status(500).end();
-    DB.getConnection((err, connection) => {
-        if (err) return console.log(err);
-        if (
-            connection.query(`call select_all('user',"hashtag = ? and password = ?",null)`, [user, check], (err, rows, fields) => {
-                if (err) {
-                    console.log(err);
-                    return false;
-                }
-                if (rows[0].length > 0) {
-                    return true;
-                }
+    const connection = await DB.connect();
 
-                res.status(500).end();
-                return false;
-            })
-        ) {
-            connection.query(`call user('update',?,?,?,?)`, icon ? [user, name, password, icon.filename] : [user, name, password, old_icon], (err, rows, fields) => {
-                if (err) {
-                    res.status(500).end();
-                    return console.log(err);
-                }
-                if (icon) {
-                    // console.log(`old_icon: ${old_icon}`)
-                    //    fs.unlink(`./server/files/icon/${icon.filename}`,(err)=>{
-                    //      if(err)
-                    //          return console.log(err)
-                    //    })
-                    fs.unlink(`${process.env.path_icon}/${old_icon}`, (err) => {
-                        if (err) return console.log(err);
-                    });
-                    return res.json({ name: name, password: password, icon: icon.filename }).end();
-                }
-                return res.json({ name: name, password: password }).end();
-            });
-        }
-        return connection.release();
-    });
+    let data = await connection.query(`select * from select_user($1,'')`, [`hashtag = '${user}' and password = '${check}'`]);
+    if (data.err) {
+        console.log(err);
+        return res.status(500).end();
+    }
+    if (data.rows.length <= 0) {
+        return res.status(500).end();
+    }
+    data = await connection.query(`call "user"('update',$1,$2,$3,$4)`, icon ? [user, name, password, icon.filename] : [user, name, password, old_icon]);
+    if (data.err) {
+        res.status(500).end();
+        return console.log(err);
+    }
+    if (icon) {
+        fs.unlink(`${process.env.path_icon}/${old_icon}`, (err) => {
+            if (err) return console.log(err);
+        });
+        connection.release();
+        return res.json({ name: name, password: password, icon: icon.filename }).end();
+    }
+    connection.release();
+    return res.json({ name: name, password: password }).end();
 });
 export default Router;

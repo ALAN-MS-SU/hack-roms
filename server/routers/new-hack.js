@@ -10,9 +10,8 @@ const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const type = file.mimetype.split('/');
         const extension = file.originalname.split('.');
-        console.log(`type: ${type[0]} extension: ${extension[extension.length - 1]}`);
         if (type[0] === 'image' && file.fieldname === 'cover') return cb(null, './server/files/cover/');
-        if (type[1] === 'octet-stream' && file.fieldname === 'game' && extension[extension.length - 1] === 'bps') return cb(null, './server/files/game_file/');
+        if ((type[1] === 'octet-stream' || type[1] === 'x-bps-patch') && file.fieldname === 'game' && extension[extension.length - 1] === 'bps') return cb(null, './server/files/game_file/');
         try {
             throw new Error('image not accepted');
         } catch (err) {
@@ -23,21 +22,17 @@ const storage = multer.diskStorage({
     filename: (req, file, cb) => {
         const type = file.mimetype.split('/');
         if (type[0] === 'image') return cb(null, `${uuid()}.${type[1]}`);
-        if (type[1] === 'octet-stream') return cb(null, `${uuid()}.bps`);
-        //  throw new Error("2")
+        if (type[1] === 'octet-stream' || type[1] === 'x-bps-patch') return cb(null, `${uuid()}.bps`);
     }
 });
 const files = multer({ storage: storage });
 const router = express.Router();
-router.get('/category', files.none(), (req, res) => {
-    DB.getConnection((err, connection) => {
-        if (err) return console.log(err);
-        connection.query("call select_all('category',null,'category')", (err, rows, fields) => {
-            if (err) return console.log(err);
-            res.json(rows[0]);
-        });
-        return connection.release();
-    });
+router.get('/category', files.none(), async (req, res) => {
+    const connection = await DB.connect();
+    let data = await connection.query("select * from select_category('','category')");
+    if (data.err) return console.log(data.err);
+    connection.release();
+    return res.json(data.rows);
 });
 router.post(
     '/create-hack',
@@ -45,7 +40,7 @@ router.post(
         { name: 'cover', maxCount: 1 },
         { name: 'game', maxCount: 1 }
     ]),
-    (req, res) => {
+    async (req, res) => {
         const name = req.body.name.trim();
         const hashtag = req.body.user.trim();
         const password = req.body.password.trim();
@@ -74,7 +69,7 @@ router.post(
             }
             return res.status(500).end();
         }
-        console.log(`primeira validação`);
+
         if (!game || !cover) {
             if (!game && cover) {
                 fs.unlink(`${process.env.path_cover}/${cover}`, (err) => {
@@ -88,33 +83,28 @@ router.post(
             }
             return res.status(500).end();
         }
-        DB.getConnection((err, connection) => {
-            if (err) return console.log(err);
-            if (
-                !connection.query(`call select_all('user',"hashtag = ? and password = ?",null)`, [hashtag, password], (err, rows, fields) => {
-                    if (err) return console.log(err);
-                    if (rows[0]) return true;
-                    return false;
-                })
-            )
-                return res.status(500).end();
-            if (name.length < 4 || hashtag < 5 || original_game < 3) return res.status(500).end();
-            connection.query("call hacks('insert',?,?,?,?,?,?,null)", [name, hashtag, category, original_game, cover, game], (err, rows, fields) => {
-                if (err) return console.log(err);
-                fs.rename(`${process.env.path_cover}/${cover.split('---')[1]}`, `${process.env.path_cover}/${cover}`, (err) => {
-                    if (err) {
-                        return console.log(err);
-                    }
-                });
-                fs.rename(`${process.env.path_game}/${game.split('---')[1]}`, `${process.env.path_game}/${game}`, (err) => {
-                    if (err) {
-                        return console.log(err);
-                    }
-                });
-                return res.json({ user: hashtag.split('#')[1] }).end();
-            });
-            return connection.release();
+        const connection = await DB.connect();
+
+        let data = await connection.query(`select * from select_user($1,'')`, [`hashtag = '${hashtag}' and password = '${password}'`]);
+
+        if (data.err) return console.log(data.err);
+        if (data.rows <= 0) return res.status(500).end();
+
+        if (name.length < 4 || hashtag < 5 || original_game < 3) return res.status(500).end();
+        data = await connection.query(`call hacks('insert',$1,$2,$3,$4,$5,$6,null)`, [name, hashtag, category, original_game, cover, game]);
+        if (data.err) return console.log(data.err);
+        fs.rename(`${process.env.path_cover}/${cover.split('---')[1]}`, `${process.env.path_cover}/${cover}`, (err) => {
+            if (err) {
+                return console.log(err);
+            }
         });
+        fs.rename(`${process.env.path_game}/${game.split('---')[1]}`, `${process.env.path_game}/${game}`, (err) => {
+            if (err) {
+                return console.log(err);
+            }
+        });
+        connection.release();
+        return res.sendStatus(200).end();
     }
 );
 export default router;
