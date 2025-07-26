@@ -31,7 +31,6 @@ export default function Account(props) {
                     if (err) return console.log(err);
                 })
         );
-        console.log(hacks);
     }
     async function delete_user() {
         const data = new FormData();

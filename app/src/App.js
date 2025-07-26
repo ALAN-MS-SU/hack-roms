@@ -8,7 +8,7 @@ import Search from './components/pages/search';
 import Account from './components/pages/account';
 import Update_user from './components/pages/update-user';
 import Update_hack from './components/pages/update-hack';
-import icon_default from './assets/images/default.jpeg';
+import icon_default from './assets/images/default.png';
 import About from './components/pages/about';
 import Hack from './components/pages/hack';
 import './assets/styles/global.css';

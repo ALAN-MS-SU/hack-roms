@@ -1,4 +1,3 @@
-import React, { useEffect, useRef } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import '../../assets/styles/login.css';
 export default function Login(props) {
@@ -24,11 +23,12 @@ export default function Login(props) {
                 alert('Esses dados não foram aceitos. Tente outros');
                 return functions.err();
             }
+
             localStorage.setItem('user', response.hashtag);
             localStorage.setItem('name', response.name);
             localStorage.setItem('password', response.password);
             localStorage.setItem('icon', response.icon);
-            return navigate(response.link);
+            return navigate(`/home/${formdata.get('hashtag').split('#')[1]}`);
         }
         return (
             <div className="login">

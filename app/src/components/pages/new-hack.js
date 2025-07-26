@@ -29,26 +29,24 @@ export default function Create(props) {
         const password = localStorage.getItem('password') || false;
         if (!hashtag || !password) return functions.err();
         const form = document.querySelector('#form');
-        const data = new FormData(form);
-        data.append('user', hashtag);
-        data.append('password', password);
-        const results = await fetch(`${props.api.host}/create-hack`, {
+        const dataF = new FormData(form);
+        dataF.append('user', hashtag);
+        dataF.append('password', password);
+
+        await fetch(`${props.api.host}/create-hack`, {
             method: 'post',
-            body: data
+            body: dataF
         })
             .then((data) => {
                 if (!data.ok) return console.log(data);
-                return data.json();
+                navigate(`/home/${String(dataF.get('hashtag')).split('#')[1]}`);
+                return
             })
             .catch((err) => {
                 if (err) return console.log(err);
+                alert('Esses dados não foram aceitos. Tente outros');
+                return functions.err();
             });
-        console.log(results);
-        if (!results) {
-            alert('Esses dados não foram aceitos. Tente outros');
-            return functions.err();
-        }
-        return navigate(`/home/${results.user}`);
     }
     return (
         <div className="new-hack" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
@@ -70,9 +68,9 @@ export default function Create(props) {
                             Category
                         </option>
                         {category
-                            ? category.map((category) => (
+                            ? category.map((category, key) => (
                                   <>
-                                      <option className="option" value={category.category}>
+                                      <option key={key} className="option" value={category.category}>
                                           {category.category}
                                       </option>
                                   </>
@@ -97,7 +95,13 @@ export default function Create(props) {
                     </label>
                     <input id="Game file" name="game" type="file" onChange={() => functions.label(1)} />
                 </div>
-                <button type="button" className="btn-light" onClick={() => create_hack()}>
+                <button
+                    type="button"
+                    className="btn-light"
+                    onClick={async () => {
+                        await create_hack();
+                    }}
+                >
                     Send
                 </button>
             </form>

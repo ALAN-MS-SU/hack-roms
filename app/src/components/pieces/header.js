@@ -5,14 +5,6 @@ import { GoSearch } from 'react-icons/go';
 import { IoMdMenu, IoMdClose } from 'react-icons/io';
 
 export default function Header(props) {
-    // window.addEventListener('scroll',()=>{
-    //    const header = document.querySelectorAll('header')[0];
-    //    setTimeout(()=>{
-    //      if(window.scrollY > 0)
-    //         return header.style.position = 'fixed'
-    //      return header.style.position = 'relative'
-    //    },100)
-    // })
     const navigate = useNavigate();
     const hashtag = localStorage.getItem('user') || null;
     const name = localStorage.getItem('name') || null;

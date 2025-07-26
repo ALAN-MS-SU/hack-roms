@@ -36,6 +36,7 @@ export default function Update(props) {
         );
     }
     async function update() {
+        
         const form = document.querySelector('#form');
         const data = new FormData(form);
         data.append('user', localStorage.getItem('user'));
