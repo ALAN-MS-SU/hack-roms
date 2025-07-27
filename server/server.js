@@ -18,6 +18,7 @@ server.use('/cover', express.static(path.resolve(dirname, 'files', 'cover')));
 server.use('/game', express.static(path.resolve(dirname, 'files', 'game_file')));
 server.use(cors());
 server.use(router_login, router_new_hack, router_search, router_user_infs, router_hacks_infs);
-server.listen(process.env.PORT, process.env.HOST||"0.0.0.0", () => {
-      console.log(`running on ${process.env.HOST}:${process.env.PORT}`);
+const HOST = rocess.env.HOST || '0.0.0.0';
+server.listen(process.env.PORT, HOST, () => {
+      console.log(`running on ${HOST}:${process.env.PORT}`);
 });
