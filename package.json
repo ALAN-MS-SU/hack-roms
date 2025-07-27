@@ -14,7 +14,7 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "build": "[my-framework] build --output public",
+    "build": "vercel",
     "dev": "node server/server"
   },
   "keywords": [],
