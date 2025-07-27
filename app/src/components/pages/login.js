@@ -28,7 +28,7 @@ export default function Login(props) {
             localStorage.setItem('name', response.name);
             localStorage.setItem('password', response.password);
             localStorage.setItem('icon', response.icon);
-            return navigate(`/home/${formdata.get('hashtag').split('#')[1]}`);
+            return navigate(`/home/${formdata.get('hashtag').split('#')[1] || formdata.get('hashtag')}`);
         }
         return (
             <div className="login">
