@@ -18,6 +18,7 @@ server.use('/cover', express.static(path.resolve(dirname, 'files', 'cover')));
 server.use('/game', express.static(path.resolve(dirname, 'files', 'game_file')));
 server.use(cors());
 server.use(router_login, router_new_hack, router_search, router_user_infs, router_hacks_infs);
-server.listen(process.env.port);
-
-export default server
+if (process.env.NODE_ENV !== 'production') {
+    server.listen(process.env.port);
+}
+export default server;
